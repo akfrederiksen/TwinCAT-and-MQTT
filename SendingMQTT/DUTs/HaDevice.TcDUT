@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HaDevice" Id="{52f4e3b7-bcd9-41f3-91ef-ccb2a221acd0}">
+    <Declaration><![CDATA[TYPE HaDevice :
+STRUCT
+	name			:	STRING;
+	state_topic		:	STRING;
+	value_template	:	STRING;
+	unique_id		:	STRING;
+	device			: 	HaProduct;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

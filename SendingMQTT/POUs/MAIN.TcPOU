@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.0">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="MAIN" Id="{0d666fc9-df30-40f9-b555-d1129e0440e1}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
@@ -9,21 +9,61 @@ VAR
     fbSendMessageIntervalTimer : TON := (PT:=T#1S);	//Interval timer for broadcasting.
 	ai_RoomTemperature AT %I* : INT; //Actual room temperature, linked to thermocouple	 
 	
-	TopicToPublishJson   : STRING(255) := 'Temperatures_JSON'; // Mqtt topic on which we will broadcast the acual temperatures in JSON format
+	TopicToPublishJson   : STRING(255) := 'unit1201/state'; //'homeassistant/sensor/unit_1400/config'; //'unit1201/state'; // Mqtt topic on which we will broadcast the acual temperatures in JSON format
 	MessageToPublishJson : STRING(255); //String to send in JSON format
+	mess				: STRING(1000) := '{"status":101}';
+	//mess				: STRING ;
 	fbJsonWriter : FB_JsonSaxWriter;
 	fbJsonDataType : FB_JsonReadWriteDataType;
-	TemperatureStructure:TemperatureStructure; 	
+	TemperatureStructure:TemperatureStructure; 
+	hadevice	:	HaDevice_1;	
+	
+	icount	:	INT;
+	
+	
+	/// homeassistant/sensor/unit_1201/config
+	
+	(*
+	{
+  "name": "turned on",
+  "state_topic": "unit1201/state",
+  "unique_id": "unit_1201",
+  "device": {
+    "name": "smart enhed",
+    "identifiers": [
+      "unit_1201"
+    ]
+  }
+}
+
+"value_template": {% raw %}"{{ value_json.status }}"{% endraw %},
+*)
 	  
+
+
 END_VAR
 
     ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF _TaskInfo[GETCURTASKINDEXEX()].FirstCycle THEN    
-    fbMqttClient.sHostName      := '192.168.178.19';
+      <ST><![CDATA[//mess := F_RTrim(mess1);
+
+(*
+hadevice.name			:= 'sensor2024';
+hadevice.state_topic	:= 'unit1201/state';
+hadevice.unique_id		:= 'unit_1400';
+hadevice.value_template	:= '{{value_json.sensor2024 | round(2)}}';
+hadevice.device.name	:= 'smart_enhed';
+hadevice.device.identifiers[1]	:= 'smart_enhed';
+hadevice.device.model			:= 'twincat3';
+hadevice.device.manufacturer	:= 'beckhoff';
+*)
+IF _TaskInfo[GETCURTASKINDEXEX()].FirstCycle THEN    
+    fbMqttClient.sHostName      := 'homeassistant'; // 192.168.2.159 - 100.97.177.128 - tailscale ip 100.92.234.119 - homeassistant
     fbMqttClient.nHostPort      := 1883;
+	fbMqttClient.sUserName		:= 'twincat_xar';
+	fbMqttClient.sUserPassword	:= '1234';
     fbMqttClient.sTopicPrefix   := '';     
-	fbMqttClient.sClientId 		:= 'Publishing PLC';
+	//fbMqttClient.sClientId 		:= 'Publishing PLC';
 END_IF
 
 fbMqttClient.Execute(TRUE);
@@ -40,31 +80,66 @@ IF fbMqttClient.bConnected THEN
             eQoS:= TcIotMqttQos.AtMostOnceDelivery, 
 			bRetain:= FALSE,
 			bQueue:= FALSE);
+
 			
 			// Fill data
-			TemperatureStructure.RoomTemperature := ai_RoomTemperature / 10.0;
-			TemperatureStructure.BathRoomTemperature :=TemperatureStructure.RoomTemperature + 0.5; // No second temperature available, so this simulation value will do.
-			TemperatureStructure.SomeOtherData := 33;// Random data.
+			IF hadevice.status <100 THEN
+				hadevice.status := hadevice.status+1.11;
+			END_IF
+			IF hadevice.status > 20 THEN
+			hadevice.status := 0;
+			END_IF
+			
+			hadevice.sensor1 := 54;
+			
+			CASE icount OF
+				0:
+				IF hadevice.sensor2 <100 THEN
+				hadevice.sensor2 := hadevice.sensor2+1;
+				END_IF
+				IF hadevice.sensor2 >= 20 THEN
+					icount := 10;
+				END_IF
+				10:
+				hadevice.sensor2 := hadevice.sensor2-1;
+				IF hadevice.sensor2 <= 0 THEN
+					icount := 0;
+				END_IF
+			END_CASE
+			
+		hadevice.sensor12 := 2024;	
+	
+			
 			
 			// COnvert to JSON string
 			fbJsonWriter.ResetDocument();
-			fbJsonDataType.AddJsonValueFromSymbol(fbJsonWriter, 'TemperatureStructure', SIZEOF(TemperatureStructure), ADR(TemperatureStructure));
+			fbJsonDataType.AddJsonValueFromSymbol(fbJsonWriter, 'hadevice_1', SIZEOF(hadevice), ADR(hadevice));
 			MessageToPublishJson := fbJsonWriter.GetDocument();
+			fbJsonWriter.EndObject();
+			fbJsonWriter.ResetDocument();
 			
 			//Publish
 			fbMqttClient.Publish(sTopic:= TopicToPublishJson, 
         	pPayload:= ADR(MessageToPublishJson), 
-			nPayloadSize:= LEN2(ADR(MessageToPublishJson))+1, 
+			nPayloadSize:= LEN2(ADR(MessageToPublishJson)), 
             eQoS:= TcIotMqttQos.AtMostOnceDelivery, 
 			bRetain:= FALSE,
 			bQueue:= FALSE);
     END_IF
 END_IF
+
+TcIotMqttQos.AtLeastOnceDelivery;
  ]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
+      <LineId Id="430" Count="0" />
+      <LineId Id="518" Count="5" />
+      <LineId Id="525" Count="3" />
+      <LineId Id="431" Count="0" />
       <LineId Id="295" Count="0" />
-      <LineId Id="297" Count="2" />
+      <LineId Id="297" Count="1" />
+      <LineId Id="402" Count="1" />
+      <LineId Id="299" Count="0" />
       <LineId Id="343" Count="0" />
       <LineId Id="300" Count="7" />
       <LineId Id="329" Count="0" />
@@ -74,19 +149,38 @@ END_IF
       <LineId Id="311" Count="0" />
       <LineId Id="317" Count="0" />
       <LineId Id="332" Count="0" />
+      <LineId Id="517" Count="0" />
       <LineId Id="363" Count="0" />
       <LineId Id="385" Count="0" />
-      <LineId Id="378" Count="2" />
+      <LineId Id="432" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="477" Count="1" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="489" Count="0" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="492" Count="1" />
+      <LineId Id="490" Count="0" />
+      <LineId Id="495" Count="2" />
+      <LineId Id="499" Count="4" />
+      <LineId Id="491" Count="0" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="505" Count="1" />
+      <LineId Id="481" Count="0" />
       <LineId Id="382" Count="0" />
       <LineId Id="384" Count="0" />
       <LineId Id="364" Count="0" />
       <LineId Id="376" Count="0" />
       <LineId Id="374" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="427" Count="0" />
       <LineId Id="377" Count="0" />
       <LineId Id="383" Count="0" />
       <LineId Id="357" Count="4" />
       <LineId Id="356" Count="0" />
       <LineId Id="312" Count="1" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="515" Count="0" />
       <LineId Id="66" Count="0" />
     </LineIds>
   </POU>

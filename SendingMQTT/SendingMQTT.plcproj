@@ -14,7 +14,16 @@
     <LibraryReferences>{d7977d01-2ebb-475b-a8de-3288262ad46f}</LibraryReferences>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DUTs\HaDevice_1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\HaProduct.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DUTs\TemperatureStructure.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\HaDevice.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
