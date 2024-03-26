@@ -30,7 +30,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{CFB2A48A-120D-4DE7-BFAB-52893B41C5E2}" Name="SendingMQTT" PrjFilePath="SendingMQTT\SendingMQTT.plcproj" TmcFilePath="SendingMQTT\SendingMQTT.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="SendingMQTT\SendingMQTT.tmc" TmcHash="{EFBE50A3-25D0-ADFC-0A67-12534BFFD4AF}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="SendingMQTT\SendingMQTT.tmc" TmcHash="{46D7D84A-B988-93CF-3F0E-6996A1619AA9}">
 					<Name>SendingMQTT Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="1">

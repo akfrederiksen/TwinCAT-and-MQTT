@@ -78,7 +78,7 @@ IF fbMqttClient.bConnected THEN
         	pPayload:= ADR(MessageToPublish), 
 			nPayloadSize:= LEN2(ADR(MessageToPublish))+1, 
             eQoS:= TcIotMqttQos.AtMostOnceDelivery, 
-			bRetain:= FALSE,
+			bRetain:= TRUE,
 			bQueue:= FALSE);
 
 			
@@ -107,7 +107,7 @@ IF fbMqttClient.bConnected THEN
 				END_IF
 			END_CASE
 			
-		hadevice.sensor12 := 2024;	
+		hadevice.sensor2024 := 2024;	
 	
 			
 			

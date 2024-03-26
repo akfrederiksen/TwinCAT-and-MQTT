@@ -6,7 +6,7 @@ STRUCT
 	status		:	REAL;
 	sensor1		:	REAL;
 	sensor2		:	REAL;
-	sensor12	:	REAL;
+	sensor2024	:	REAL;
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>
